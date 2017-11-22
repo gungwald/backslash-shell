@@ -25,6 +25,6 @@ public class File extends java.io.File {
 
 	@Override
 	public String getPath() {
-		return super.getPath().replaceAll("/", "\\");
+		return super.getPath().replaceAll("/", "\\\\");
 	}
 }

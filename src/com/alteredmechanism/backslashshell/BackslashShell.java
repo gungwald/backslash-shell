@@ -90,6 +90,9 @@ public class BackslashShell {
 		if (cmd.equals("echo")) {
 			echo(args);
 		}
+		else if (cmd.equals("cd") || cmd.equals("chdir")) {
+			chdir(args);
+		}
 		else if (cmd.equals("exit")) {
 			System.exit(EXIT_SUCCESS);
 		}
@@ -106,5 +109,30 @@ public class BackslashShell {
 			out.flush();
 		}
 		return EXIT_SUCCESS;
+	}
+	
+	protected int chdir(List<String> args) {
+		int exitCode = EXIT_SUCCESS;
+		if (args.size()>0) {
+			if (args.size() == 1) {
+				println(directory.toString());
+			}
+			else {
+				File destDir = new File(args.get(1));
+				if (destDir.isDirectory()) {
+					directory = destDir;
+				}
+				else {
+					println("Directory does not exist: " + args.get(1));
+					exitCode = EXIT_FAILURE;
+				}
+			}
+		}
+		return exitCode;
+	}
+
+	private void println(String message) {
+		out.println(message);
+		out.flush();
 	}
 }
