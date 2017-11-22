@@ -115,10 +115,10 @@ public class BackslashShell {
 		int exitCode = EXIT_SUCCESS;
 		if (args.size()>0) {
 			if (args.size() == 1) {
-				println(directory.toString());
+				println(drive + directory.toString());
 			}
 			else {
-				File destDir = new File(args.get(1));
+				File destDir = new File(directory, args.get(1));
 				if (destDir.isDirectory()) {
 					directory = destDir;
 				}
