@@ -93,6 +93,9 @@ public class BackslashShell {
 		else if (cmd.equals("cd") || cmd.equals("chdir")) {
 			chdir(args);
 		}
+		else if (cmd.equals("dir")) {
+			dir(args);
+		}
 		else if (cmd.equals("exit")) {
 			System.exit(EXIT_SUCCESS);
 		}
@@ -131,6 +134,14 @@ public class BackslashShell {
 		return exitCode;
 	}
 
+	protected int dir(List<String> args) {
+		java.io.File[] files = directory.listFiles();
+		for (java.io.File file : files) {
+			println(file.getName());
+		}
+		return EXIT_SUCCESS;
+	}
+	
 	private void println(String message) {
 		out.println(message);
 		out.flush();
