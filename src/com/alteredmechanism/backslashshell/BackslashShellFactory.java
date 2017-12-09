@@ -84,7 +84,7 @@ public class BackslashShellFactory implements ScriptEngineFactory {
 	}
 
 	public ScriptEngine getScriptEngine() {
-		return new BackslashShell();
+		return new BackslashShell(this);
 	}
 
 }

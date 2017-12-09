@@ -2,9 +2,8 @@ package com.alteredmechanism.backslashshell;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -13,41 +12,27 @@ import java.util.regex.Pattern;
 import javax.script.AbstractScriptEngine;
 import javax.script.Bindings;
 import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
-public class BackslashShell extends AbstractScriptEngine {
+public class BackslashShell extends AbstractScriptEngine implements ScriptEngine {
 
     public static final String ENV_VAR_REGEX = "%([a-zA-Z0-9_]+)%";
 
     private static final int EXIT_SUCCESS = 0;
     private static final int EXIT_FAILURE = 1;
 
-    private BufferedReader in;
-    private PrintWriter out;
+    private ScriptEngineFactory factory;
+    private ScriptContext context;
     private String drive;
     private File directory;
-    private Environment env;
     private Pattern envVarPattern;
     private boolean running;
 
-    /**
-     * @param args
-     */
-    public static void main(String[] args) {
-        try {
-            BackslashShell bssh = new BackslashShell();
-            bssh.run();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public BackslashShell() {
-        in = new BufferedReader(new InputStreamReader(System.in));
-        out = new PrintWriter(System.out);
+    public BackslashShell(BackslashShellFactory factory) {
+    	this.factory = factory;
         drive = "C:";
         directory = new File(System.getProperty("user.dir"));
         envVarPattern = Pattern.compile(ENV_VAR_REGEX);
@@ -55,12 +40,6 @@ public class BackslashShell extends AbstractScriptEngine {
     }
 
     public void run() throws IOException {
-        running = true;
-
-        while (running) {
-            prompt();
-            eval(parse(substitute(in.readLine())));
-        }
     }
 
     protected void prompt() {
@@ -91,7 +70,7 @@ public class BackslashShell extends AbstractScriptEngine {
         return args;
     }
 
-    protected void eval(List<String> args) {
+    protected void evalLine(List<String> args) {
         if (args.size() == 0) {
             return;
         }
@@ -143,17 +122,12 @@ public class BackslashShell extends AbstractScriptEngine {
         return exitCode;
     }
 
-    protected int dir(List<String> args) {
+    protected int dir(List<String> args) throws IOException {
         java.io.File[] files = directory.listFiles();
         for (java.io.File file : files) {
-            println(file.getName());
+            context.getWriter().write((file.getName()));
         }
         return EXIT_SUCCESS;
-    }
-
-    private void println(String message) {
-        out.println(message);
-        out.flush();
     }
 
 	public Bindings createBindings() {
@@ -161,17 +135,28 @@ public class BackslashShell extends AbstractScriptEngine {
 	}
 
 	public Object eval(String script, ScriptContext context) throws ScriptException {
-		// TODO Auto-generated method stub
-		return null;
+		return eval(new StringReader(script), context);
 	}
 
 	public Object eval(Reader reader, ScriptContext context) throws ScriptException {
-		// TODO Auto-generated method stub
-		return null;
+		BufferedReader in = new BufferedReader(reader);
+		this.context = context;
+        running = true;
+        int exitCode;
+
+        try {
+	        while (running) {
+	            prompt();
+	            exitCode = evalLine(parse(substitute(in.readLine())));
+	        }
+        }
+        catch (Exception e) {
+        	throw new ScriptException(e);
+        }
+		return exitCode;
 	}
 
 	public ScriptEngineFactory getFactory() {
-		// TODO Auto-generated method stub
-		return null;
+		return factory;
 	}
 }
